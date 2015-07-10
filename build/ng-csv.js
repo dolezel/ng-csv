@@ -264,7 +264,7 @@ angular.module('ngCsv.directives').
         function doClick() {
           var charset = scope.charset || "utf-8";
           var blob = new Blob([scope.csv], {
-            type: "text/csv;charset="+ charset + ";"
+            type: "data:attachment/csv;charset="+ charset + ";"
           });
 
           if (window.navigator.msSaveOrOpenBlob) {
@@ -272,7 +272,8 @@ angular.module('ngCsv.directives').
           } else {
 
             var downloadLink = angular.element('<a></a>');
-            downloadLink.attr('href', window.URL.createObjectURL(blob));
+            var URL = window.URL || window.webkitURL;
+            downloadLink.attr('href', URL.createObjectURL(blob));
             downloadLink.attr('download', scope.getFilename());
             downloadLink.attr('target', '_blank');
 
