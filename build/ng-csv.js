@@ -188,7 +188,7 @@ angular.module('ngCsv.services').
  * Author: asafdav - https://github.com/asafdav
  */
 angular.module('ngCsv.directives').
-  directive('ngCsv', ['$parse', '$q', 'CSV', '$document', '$timeout', function ($parse, $q, CSV, $document, $timeout) {
+  directive('ngCsv', ['$parse', '$q', 'CSV', 'SaveAs', function ($parse, $q, CSV, SaveAs) {
     return {
       restrict: 'AC',
       scope: {
@@ -270,21 +270,7 @@ angular.module('ngCsv.directives').
             type: "text/csv;charset="+ charset + ";"
           });
 
-          if (window.navigator.msSaveOrOpenBlob) {
-            navigator.msSaveBlob(blob, scope.getFilename());
-          } else {
-
-            var downloadLink = angular.element('<a></a>');
-            downloadLink.attr('href', window.URL.createObjectURL(blob));
-            downloadLink.attr('download', scope.getFilename());
-            downloadLink.attr('target', '_blank');
-
-            $document.find('body').append(downloadLink);
-            $timeout(function () {
-              downloadLink[0].click();
-              downloadLink.remove();
-            }, null);
-          }
+          SaveAs.download(blob, scope.getFilename());
         }
 
         element.bind('click', function (e) {
