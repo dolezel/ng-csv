@@ -19,20 +19,17 @@ angular.module('ngCsv.directives').
         fieldSep: '@fieldSeparator',
         lazyLoad: '@lazyLoad',
         addByteOrderMarker: "@addBom",
-        ngClick: '&',
+        ngClick: '=',
         charset: '@charset'
       },
       controller: [
         '$scope',
         '$element',
         '$attrs',
-        '$transclude',
-        function ($scope, $element, $attrs, $transclude) {
-          $scope.csv = '';
-
+        function ($scope, $element, $attrs) {
           if (!angular.isDefined($scope.lazyLoad) || $scope.lazyLoad != "true") {
             if (angular.isArray($scope.data)) {
-              $scope.$watch("data", function (newValue) {
+              $scope.$watch("data", function () {
                 $scope.buildCSV();
               }, true);
             }
@@ -70,7 +67,6 @@ angular.module('ngCsv.directives').
             $element.addClass($attrs.ngCsvLoadingClass || 'ng-csv-loading');
 
             CSV.stringify($scope.data(), getBuildCsvOptions()).then(function (csv) {
-              $scope.csv = csv;
               $element.removeClass($attrs.ngCsvLoadingClass || 'ng-csv-loading');
               deferred.resolve(csv);
             });
@@ -80,10 +76,10 @@ angular.module('ngCsv.directives').
           };
         }
       ],
-      link: function (scope, element, attrs) {
-        function doClick() {
+      link: function (scope, element) {
+        function doClick(csv) {
           var charset = scope.charset || "utf-8";
-          var blob = new Blob([scope.csv], {
+          var blob = new Blob([csv], {
             type: "text/csv;charset="+ charset + ";"
           });
 
@@ -104,11 +100,21 @@ angular.module('ngCsv.directives').
           }
         }
 
-        element.bind('click', function (e) {
+        function onClick() {
           scope.buildCSV().then(function (csv) {
-            doClick();
+            if (scope.ngClick) {
+              scope.ngClick(csv);
+            } else {
+              doClick(csv);
+            }
           });
           scope.$apply();
+        }
+
+        element.bind('click', onClick);
+
+        scope.$on('$destroy', function() {
+          element.unbind('click', onClick);
         });
       }
     };
